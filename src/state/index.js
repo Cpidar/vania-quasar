@@ -62,10 +62,6 @@ export const present = async (data) => {
       // case 'getEvent':
       //     return { ...model, PHN: data.PHN, events: data.events, period: data.period };
 
-      // case 'addEvent':
-      //     model.events.push(data);
-      //     return model;
-
     default:
       return initialModel
   }
@@ -125,6 +121,11 @@ const dayInMonth = (m) => range(0, 42)
     map((day) => dayState(day, m))
   )
 
+// const dayInMonth = (m) => {
+//   Array.from({length: 42}, (v, i) => i - moment(m.month).clone().weekday())
+//     .map(d => dayState(d, m))
+// }
+
 export const getDaysInMonth = model$.pipe(
   filter(m => m.status !== 'SELECTED_DAY'),
   tap(() => console.log('new days')),
@@ -145,6 +146,7 @@ export const selectDone = model$.pipe(
 
 export const getSelectedDay = model$.pipe(
   // distinctUntilKeyChanged('selectedDay'),
+  tap(() => console.log('get selected date')),
   map((m) => {
     return {
       day: moment(m.selectedDay).format('jDD'),
@@ -152,7 +154,6 @@ export const getSelectedDay = model$.pipe(
       year: moment(m.selectedDay).format('jYYYY')
     }
   }),
-  tap(() => console.log('get selected date')),
   share()
 )
 

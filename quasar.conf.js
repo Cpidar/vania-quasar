@@ -61,7 +61,14 @@ module.exports = function (ctx) {
         'QTab',
         'QTabPane',
         'QRouteTab',
-        'QDialog'
+        'QDialog',
+        'QField',
+        'QCollapsible',
+        'ScrollFire',
+        'QScrollObservable',
+        'QPageSticky',
+        'Scroll',
+        'QCheckbox'
       ],
       directives: [
         'Ripple',

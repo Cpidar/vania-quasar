@@ -26,7 +26,6 @@
                         period: day.isPeriod,
                         'has-note': phnState[7*i + index],
                         'has-note': badTimeState[7*i + index],
-
                     }"
                 v-stream:click="{subject: select$, data: day.jDate}">
                     <span style="pointer-events: none;">{{day.day}}</span></div>
@@ -45,14 +44,28 @@
                 </svg> -->
         </section>
         <section class="spacer">
-          <h6 v-for="ev of event$" :key="ev.type+ev.id" no-margin>{{ev.title}}</h6>
+          <h6 v-for="ev of event$" :key="ev.type+ev.id" class="text-center">{{ev.title}}</h6>
         </section>
-        <section>
+        <section class="phn-grid">
           <q-btn rounded outline color="secondary" label="خونریزی" icon="card_giftcard" @click="bleed"/>
           <q-btn rounded outline color="secondary" label="مود" icon="mood" />
+          <div class="phn-row-span">
+            <q-checkbox
+              v-model="checked"
+              checked-icon="sentiment very satisfied"
+              unchecked-icon="sentiment very dissatisfied"
+            />
+
+            <!-- an eye and a crossed out eye to indicate visibility -->
+            <q-checkbox
+              v-model="checked"
+              checked-icon="visibility"
+              unchecked-icon="visibility_off"
+            />
+          </div>
           <q-btn rounded outline color="secondary" label="نزدیکی" icon="card_giftcard" />
           <q-btn rounded outline color="secondary" label="درد" icon="face" />
-          <q-btn rounded outline color="secondary" label="یادداشت" icon="event_note" />
+          <q-btn rounded outline color="secondary" label="یادداشت" icon="event_note" class="phn-row-span" />
         </section>
 
         <!-- <footer>
@@ -62,6 +75,37 @@
                 <a href="http://"><i class="fas fa-chart-line"></i></i></a>
                 <a href="http://"><i class="fas fa-user"></i></a>
             </footer> -->
+
+        <q-dialog
+          v-model="bleedDialogState"
+          stack-buttons
+          prevent-close
+          @ok="onOk"
+        >
+          <!-- This or use "title" prop on <q-dialog> -->
+          <span slot="title">Favorite Superhero</span>
+
+          <!-- This or use "message" prop on <q-dialog> -->
+          <span slot="message">What is your superhero of choice?</span>
+
+          <div slot="body">
+            <q-field
+              icon="account_circle"
+              helper="We need your name so we can send you to the movies."
+              label="Your name"
+              label-width="3"
+            >
+            </q-field>
+          </div>
+
+          <template slot="buttons" slot-scope="props">
+            <q-btn color="primary" label="Choose Superman" @click="choose(props.ok, 'Superman')" />
+            <q-btn color="black" label="Choose Batman" @click="choose(props.ok, 'Batman')" />
+            <q-btn color="negative" label="Choose Spiderman" @click="choose(props.ok, 'Spiderman')" />
+            <q-btn flat label="No thanks" @click="props.cancel" />
+          </template>
+        </q-dialog>
+      <!-- <q-scroll-observable @scroll="userHasScrolled" /> -->
     </div>
     <!-- jhjhkj -->
 
@@ -98,7 +142,9 @@ export default {
   data () {
     return {
       phnState: Array.from({length: 42}, (v) => false),
-      badTimeState: Array.from({length: 42}, (v) => false)
+      badTimeState: Array.from({length: 42}, (v) => false),
+      bleedDialogState: false,
+      checked: false
     }
   },
 
@@ -151,25 +197,25 @@ export default {
       dispatch('goToPrevMonth')
     },
     bleed () {
-      this.$q.dialog({
-        title: 'میزان خونریزی',
-        options: {
-          type: 'radio',
-          model: 'opt2',
-          items: [
-            {label: 'لکه بینی', value: 'opt0'},
-            {label: 'کم', value: 'opt1', color: 'secondary'},
-            {label: 'متوسط', value: 'opt2'},
-            {label: 'زیاد', value: 'opt3'}
-          ]
-        },
-        cancel: false,
-        preventClose: false,
-        color: 'secondary'
-      }).then(data => {
-        this.$q.notify(`You selected: ${data}`)
-      })
+      this.$data.bleedDialogState = true
+    },
+    onOk () {
+      this.$q.notify('ok')
     }
+    // userHasScrolled (scroll) {
+    //   if (scroll.position > this.$el.querySelector('.today').offsetTop - 70) {
+    //     this.$el.querySelector('.today').parentNode.classList.add('fix')
+    //     console.log(scroll)
+    //   } else {
+    //     this.$el.querySelector('.today').parentNode.classList.remove('fix')
+    //   }
+    //   // {
+    //   //   position: 56, // pixels from top
+    //   //   direction: 'down', // 'down' or 'up'
+    //   //   directionChanged: false, // has direction changed since this handler was called?
+    //   //   inflexionPosition: 56 // last scroll position where user changed scroll direction
+    //   // }
+    // }
   },
 
   subscriptions () {
@@ -251,6 +297,14 @@ export default {
   width: var(--calendar-width);
   height: var(--calendar-height) + 5 * 10px;
   margin-top: 10px;
+  transition: all 0.2s;
+}
+
+.fix {
+  position: fixed;
+  top: 58px;
+  z-index: 100;
+  height: 45px;
 }
 
 .week > div > span {
@@ -429,5 +483,17 @@ footer {
   height: 10px;
   background-color: #865fc1;
   border-radius: 50%;
+}
+
+.phn-grid {
+  width: 95%;
+  margin: 10px auto;
+  display: grid;
+  grid: 1fr / 1fr 1fr;
+  grid-gap: 10px;
+}
+
+.phn-row-span {
+  grid-column: 1 / 3;
 }
 </style>
