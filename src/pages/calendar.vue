@@ -50,23 +50,17 @@
           <q-btn rounded outline color="secondary" label="خونریزی" icon="card_giftcard" @click="bleed"/>
           <q-btn rounded outline color="secondary" label="مود" icon="mood" />
           <div class="phn-row-span">
-            <q-checkbox
-              v-model="checked"
-              checked-icon="sentiment very satisfied"
-              unchecked-icon="sentiment very dissatisfied"
-            />
+            <q-card inline class="q-ma-sm">
+              <q-card-main>
 
-            <!-- an eye and a crossed out eye to indicate visibility -->
-            <q-checkbox
-              v-model="checked"
-              checked-icon="visibility"
-              unchecked-icon="visibility_off"
-            />
+              </q-card-main>
+            </q-card>
           </div>
           <q-btn rounded outline color="secondary" label="نزدیکی" icon="card_giftcard" />
           <q-btn rounded outline color="secondary" label="درد" icon="face" />
           <q-btn rounded outline color="secondary" label="یادداشت" icon="event_note" class="phn-row-span" />
         </section>
+        <phn-modal :phn-modal-state="phnModalState" @close="phnModalState = false" />
 
         <!-- <footer>
                 <a href="http://"><i class="fas fa-bell"></i></a>
@@ -75,36 +69,6 @@
                 <a href="http://"><i class="fas fa-chart-line"></i></i></a>
                 <a href="http://"><i class="fas fa-user"></i></a>
             </footer> -->
-
-        <q-dialog
-          v-model="bleedDialogState"
-          stack-buttons
-          prevent-close
-          @ok="onOk"
-        >
-          <!-- This or use "title" prop on <q-dialog> -->
-          <span slot="title">Favorite Superhero</span>
-
-          <!-- This or use "message" prop on <q-dialog> -->
-          <span slot="message">What is your superhero of choice?</span>
-
-          <div slot="body">
-            <q-field
-              icon="account_circle"
-              helper="We need your name so we can send you to the movies."
-              label="Your name"
-              label-width="3"
-            >
-            </q-field>
-          </div>
-
-          <template slot="buttons" slot-scope="props">
-            <q-btn color="primary" label="Choose Superman" @click="choose(props.ok, 'Superman')" />
-            <q-btn color="black" label="Choose Batman" @click="choose(props.ok, 'Batman')" />
-            <q-btn color="negative" label="Choose Spiderman" @click="choose(props.ok, 'Spiderman')" />
-            <q-btn flat label="No thanks" @click="props.cancel" />
-          </template>
-        </q-dialog>
       <!-- <q-scroll-observable @scroll="userHasScrolled" /> -->
     </div>
     <!-- jhjhkj -->
@@ -131,20 +95,23 @@ import {
   distinctUntilKeyChanged,
   bufferCount,
   share,
-  observeOn,
+  // observeOn,
   distinctUntilChanged
 } from 'rxjs/operators'
-import { asyncScheduler } from 'rxjs'
+// import { asyncScheduler } from 'rxjs'
+import PhnModal from '../components/phn-modal.vue'
 
 export default {
+  components: {
+    PhnModal
+  },
   domStreams: ['select$'],
 
   data () {
     return {
       phnState: Array.from({length: 42}, (v) => false),
       badTimeState: Array.from({length: 42}, (v) => false),
-      bleedDialogState: false,
-      checked: false
+      phnModalState: false
     }
   },
 
@@ -166,7 +133,7 @@ export default {
     this.$subscribeTo(selectDone.pipe(
       distinctUntilChanged(),
       tap(() => console.log('hi')),
-      observeOn(asyncScheduler),
+      // observeOn(asyncScheduler),
       startWith([this.$el.querySelector('.select')]),
       map((d) => this.$refs['' + d]),
       pairwise()
@@ -197,10 +164,7 @@ export default {
       dispatch('goToPrevMonth')
     },
     bleed () {
-      this.$data.bleedDialogState = true
-    },
-    onOk () {
-      this.$q.notify('ok')
+      this.$data.phnModalState = true
     }
     // userHasScrolled (scroll) {
     //   if (scroll.position > this.$el.querySelector('.today').offsetTop - 70) {

@@ -1,8 +1,8 @@
 import jMoment from 'moment-jalaali'
 jMoment.locale('fa')
 jMoment.loadPersian({ usePersianDigits: false, dialect: 'persian-modern' })
-import { Subject, range } from 'rxjs'
-import { map, shareReplay, switchMap, tap, mergeMap, share, filter } from 'rxjs/operators'
+import { Subject, range, asyncScheduler } from 'rxjs'
+import { map, shareReplay, switchMap, tap, mergeMap, share, filter, observeOn } from 'rxjs/operators'
 import { getBadTimeEvents, checkHasPHN, checkBadTime } from '../events/event'
 
 const moment = (str) => jMoment(str, 'jYYYY-jMM-jDD')
@@ -116,7 +116,6 @@ export const model$ = action$.pipe(
 
 const dayInMonth = (m) => range(0, 42)
   .pipe(
-    // observeOn(asyncScheduler),
     map((k) => k - moment(m.month).clone().weekday()),
     map((day) => dayState(day, m))
   )
@@ -129,6 +128,7 @@ const dayInMonth = (m) => range(0, 42)
 export const getDaysInMonth = model$.pipe(
   filter(m => m.status !== 'SELECTED_DAY'),
   tap(() => console.log('new days')),
+  observeOn(asyncScheduler),
   switchMap((m) => dayInMonth(m)),
   share()
 )

@@ -57,6 +57,7 @@ module.exports = function (ctx) {
         'QItem',
         'QItemMain',
         'QItemSide',
+        'QItemSeparator',
         'QTabs',
         'QTab',
         'QTabPane',
@@ -65,14 +66,23 @@ module.exports = function (ctx) {
         'QField',
         'QCollapsible',
         'ScrollFire',
+        'QScrollArea',
         'QScrollObservable',
         'QPageSticky',
         'Scroll',
-        'QCheckbox'
+        'QCheckbox',
+        'QCard',
+        'QCardTitle',
+        'QCardMain',
+        'QCardMedia',
+        'QCardSeparator',
+        'QCardActions',
+        'QModal'
       ],
       directives: [
         'Ripple',
-        'TouchSwipe'
+        'TouchSwipe',
+        'CloseOverlay'
       ],
       // Quasar plugins
       plugins: [
@@ -83,7 +93,8 @@ module.exports = function (ctx) {
       i18n: 'fa-ir' // Quasar language
     },
     // animations: 'all' --- includes all animations
-    animations: [],
+    // animations: [],
+    animations: 'all',
     ssr: {
       pwa: false
     },
