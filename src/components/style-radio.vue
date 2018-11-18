@@ -2,9 +2,7 @@
   <div class="ir-container">
     <label>
       <input type="radio" :checked="shouldBeChecked" @change="updateInput" value="value" />
-      <div :class="{box: styled && shouldBeChecked}">
-        <img width="50px" height="50px" :src="change" :key="change" :class="{icon: styled && shouldBeChecked}" />
-      </div>
+      <img width="50px" height="50px" :src="change" :key="change"/>
       <div>{{label}}</div>
     </label>
   </div>
@@ -17,10 +15,6 @@ export default {
     event: 'change'
   },
   props: {
-    styled: {
-      type: Boolean,
-      default: false
-    },
     value: {
       type: String
     },
@@ -41,7 +35,7 @@ export default {
   computed: {
     change () {
       return this.modelValue === this.value
-        ? this.checkedIcon || this.uncheckedIcon
+        ? this.checkedIcon
         : this.uncheckedIcon
     },
     shouldBeChecked () {
@@ -57,16 +51,6 @@ export default {
 </script>
 
 <style>
-.icon {
-  background-color: darkorchid;
-  border-radius: 50%;
-}
-.box::after {
-  content: url(../assets/icons/ic_selected_green.png);
-  position: relative;
-  bottom: 0;
-  right: 20px;
-}
 .ir-contanier {
   margin: 0 5px;
 }

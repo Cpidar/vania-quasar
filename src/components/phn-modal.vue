@@ -6,7 +6,7 @@
                     <h6>خونریزی</h6>
                     <q-item>
                         <div class="bleed-container">
-                            <iRadio checked-icon="../assets/icons/ic_mf_l_c.png" unchecked-icon="../assets/icons/ic_mf_l_l.png" value="high" v-model="bleedState" />
+                            <iRadio unchecked-icon="../assets/icons/ic_mf_l_l.png" value="high" v-model="bleedState" styled />
                             <iRadio checked-icon="../assets/icons/ic_mf_m_c.png" unchecked-icon="../assets/icons/ic_mf_m_l.png" value="medium" v-model="bleedState" />
                             <iRadio checked-icon="../assets/icons/ic_mf_s_c.png" unchecked-icon="../assets/icons/ic_mf_s_l.png" value="low" v-model="bleedState" />
                             <iRadio checked-icon="../assets/icons/ic_mf_xs_c.png" unchecked-icon="../assets/icons/ic_mf_xs_l.png" value="lower" v-model="bleedState" />
@@ -100,9 +100,7 @@ export default {
         sexState: this.$data.sexState,
         symptomState: this.$data.symptomState,
         moodState: this.$data.moodState
-      }).then((res) => {
-        if(res.ok) this.$q.notify('ok')
-      )
+      })
       this.showModal = false
       this.$emit('close')
     }
