@@ -23,6 +23,7 @@
                 :ref="day.jDate"
                 :class="{
                         today: day.isToday,
+                        select: day.jDate === getSelectedDay$,
                         period: day.isPeriod,
                         'has-note': phnState[7*i + index],
                         'has-note': badTimeState[7*i + index],
@@ -43,25 +44,45 @@
                     <line x1="0" x2="100%"/>
                 </svg> -->
         </section>
-        <section class="spacer">
-          <h6 v-for="ev of event$" :key="ev.type+ev.id" class="text-center">{{ev.title}}</h6>
+        <section>
+          <dl class="q-my-md">
+            <dd v-for="ev of event$" :key="ev.type+ev.id" class="text-center"><span class="q-body-2">{{ev.title}}</span></dd>
+          </dl>
         </section>
-        <section class="phn-grid">
-          <q-btn rounded outline color="secondary" label="خونریزی" icon="card_giftcard" @click="bleed"/>
-          <q-btn rounded outline color="secondary" label="مود" icon="mood" />
-          <div class="phn-row-span">
-            <q-card inline class="q-ma-sm">
-              <q-card-main>
-
-              </q-card-main>
-            </q-card>
+        <section class="column items-center gutter-sm">
+            <!-- <div><q-btn round size="md" color="pink" icon="card_giftcard" @click="bleed"/></div>
+            <div><q-btn round color="blue" icon="mood" /></div>
+            <div><q-btn round color="orange" icon="card_giftcard" @click="gotPeriod"/></div>
+            <div><q-btn round color="purple" icon="face" /></div> -->
+            <transition
+              appear
+              enter-active-class="animated fadeIn"
+              leave-active-class="animated fadeOut"
+            >
+          <div class="row no-wrap gutter-xs justify-center" key="phn-list">
+              <div v-for="phn of phnValues$" :key="phn">
+                <img :src="'../assets/icons/ic_' + phn + '.png'" width="50px" height="50px">
+              </div>
           </div>
-          <q-btn rounded outline color="secondary" label="نزدیکی" icon="card_giftcard" />
-          <q-btn rounded outline color="secondary" label="درد" icon="face" />
-          <q-btn rounded outline color="secondary" label="یادداشت" icon="event_note" class="phn-row-span" />
+            </transition>
+          <div>
+            <q-page-sticky position="bottom" :offset="[18, 18]">
+              <q-btn rounded icon="add" color="primary" label="ثبت وضعیت" @click="bleed"/>
+            </q-page-sticky>
+          </div>
+          <div >
+            <!-- <q-input
+              type="textarea"
+              float-label="یادداشت"
+              :max-height="20"
+              rows="1"
+              inverted
+              color="cyan"
+              class="q-mx-md"
+            /> -->
+          </div>
         </section>
-        <phn-modal :phn-modal-state="phnModalState" @close="phnModalState = false" />
-
+        <phn-modal :phn-modal-state="phnModalState" @close="phnModalState = false" :phn="phn$" :id="'PHN-'+getSelectedDay$"/>
         <!-- <footer>
                 <a href="http://"><i class="fas fa-bell"></i></a>
                 <a href="http://"><i class="fas fa-home"></i></a>
@@ -77,26 +98,30 @@
 
 <script>
 import {
-  getDaysInMonth,
   dispatch,
-  getSelectedDay,
+  getSelectedDayObj,
   getSelectedEvent,
   getPHNState,
   getBadTimeState,
-  selectDone
+  getSelectedDay,
+  getMonth,
+  getSelectedPHN,
+  getPHNValues
 } from '../state/index'
 import {
-  map,
+  // map,
   tap,
-  pairwise,
-  startWith,
+  // pairwise,
+  // startWith,
   pluck,
-  switchMapTo,
-  distinctUntilKeyChanged,
+  // switchMapTo,
+  // distinctUntilKeyChanged,
   bufferCount,
-  share,
+  share
+  // subscribeOn
   // observeOn,
-  distinctUntilChanged
+  // distinctUntilChanged
+  // observeOn
 } from 'rxjs/operators'
 // import { asyncScheduler } from 'rxjs'
 import PhnModal from '../components/phn-modal.vue'
@@ -120,35 +145,18 @@ export default {
     dispatch('init', payload)
     this.$subscribeTo(getPHNState.pipe(
       bufferCount(42)
+      // subscribeOn(asyncScheduler)
     // eslint-disable-next-line no-return-assign
     ), x => this.$data.phnState = x)
 
     this.$subscribeTo(getBadTimeState.pipe(
       bufferCount(42)
+      // subscribeOn(asyncScheduler)
     // eslint-disable-next-line no-return-assign
     ), x => this.$data.badTimeState = x)
   },
 
   mounted () {
-    this.$subscribeTo(selectDone.pipe(
-      distinctUntilChanged(),
-      tap(() => console.log('hi')),
-      // observeOn(asyncScheduler),
-      startWith([this.$el.querySelector('.select')]),
-      map((d) => this.$refs['' + d]),
-      pairwise()
-    ),
-    (el) => {
-      console.log(el)
-      if (el[0] && el[0].length) {
-        el[0][0].classList.remove('select')
-      }
-      if (el[1]) {
-        el[1][0].classList.add('select')
-      }
-    }
-    )
-    // setTimeout(() => this.$el.querySelector('.today').classList.add('select'), 0)
   },
 
   created () {
@@ -165,58 +173,32 @@ export default {
     },
     bleed () {
       this.$data.phnModalState = true
+    },
+    gotPeriod () {
+      dispatch('gotPeriod')
     }
-    // userHasScrolled (scroll) {
-    //   if (scroll.position > this.$el.querySelector('.today').offsetTop - 70) {
-    //     this.$el.querySelector('.today').parentNode.classList.add('fix')
-    //     console.log(scroll)
-    //   } else {
-    //     this.$el.querySelector('.today').parentNode.classList.remove('fix')
-    //   }
-    //   // {
-    //   //   position: 56, // pixels from top
-    //   //   direction: 'down', // 'down' or 'up'
-    //   //   directionChanged: false, // has direction changed since this handler was called?
-    //   //   inflexionPosition: 56 // last scroll position where user changed scroll direction
-    //   // }
-    // }
   },
 
   subscriptions () {
-    const month$ = getDaysInMonth.pipe(
-      bufferCount(7),
-      bufferCount(6)
-    )
-
-    const selectedDay$ = this.select$.pipe(
-      distinctUntilKeyChanged('data'),
-      tap(e => e.event.srcElement.classList.add('select')),
+    const selectClick$ = this.select$.pipe(
+      // distinctUntilKeyChanged('data'),
+      // tap(e => e.event.srcElement.classList.add('select')),
       tap(e => dispatch('selectDay', e.data)),
       share()
     )
 
-    const event$ = selectedDay$.pipe(
-      startWith(true),
-      switchMapTo(getSelectedEvent)
-    )
-
-    const date$ = selectedDay$.pipe(
-      startWith(true),
-      switchMapTo(getSelectedDay),
-      share()
-    )
-
-    const day$ = date$.pipe(pluck('day'))
-    const monthName$ = date$.pipe(pluck('month'))
-    const year$ = date$.pipe(pluck('year'))
+    const date$ = getSelectedDayObj
 
     return {
-      month$,
-      selectedDay$,
-      day$,
-      monthName$,
-      year$,
-      event$
+      selectClick$,
+      getSelectedDay$: getSelectedDay,
+      month$: getMonth,
+      day$: date$.pipe(pluck('day')),
+      monthName$: date$.pipe(pluck('month')),
+      year$: date$.pipe(pluck('year')),
+      event$: getSelectedEvent,
+      phn$: getSelectedPHN,
+      phnValues$: getPHNValues
     }
   }
 }
@@ -351,6 +333,10 @@ footer {
   width: 100%;
   flex-grow: 1;
   justify-items: flex-end;
+}
+
+.events :first-child {
+  text-decoration: none;
 }
 
 .plus {

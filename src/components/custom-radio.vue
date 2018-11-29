@@ -2,7 +2,7 @@
   <div class="ir-container">
     <label>
       <input type="radio" :checked="shouldBeChecked" @change="updateInput" value="value" />
-      <div :class="{box: styled && shouldBeChecked}">
+      <div :class="{box: styled && shouldBeChecked}" :style="{backgroundColor: shouldBeChecked ? bgColor : 'transparent'}">
         <img width="50px" height="50px" :src="change" :key="change" :class="{icon: styled && shouldBeChecked}" />
       </div>
       <div>{{label}}</div>
@@ -36,6 +36,9 @@ export default {
     },
     uncheckedIcon: {
       type: String
+    },
+    bgColor: {
+      type: String
     }
   },
   computed: {
@@ -58,18 +61,26 @@ export default {
 
 <style>
 .icon {
-  background-color: darkorchid;
+  border-radius: 50%;
+}
+.box {
+  position: relative;
+  width: 55px;
+  height: 55px;
   border-radius: 50%;
 }
 .box::after {
-  content: url(../assets/icons/ic_selected_green.png);
-  position: relative;
-  bottom: 0;
-  right: 20px;
+  position: absolute;
+  background-image: url("../assets/icons/ic_selected_green.png");
+  background-size: 18px 18px;
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  left: 3px;
+  bottom: 9px;
+  content: "";
 }
-.ir-contanier {
-  margin: 0 5px;
-}
+
 input[type="radio"] {
   display: none;
 }
@@ -78,7 +89,6 @@ input[type="radio"] > label img {
   vertical-align: middle;
   width: 45px;
   height: 45px;
-  transition: all 0.2;
 }
 
 .fade-enter-active,

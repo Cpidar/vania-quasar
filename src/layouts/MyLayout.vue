@@ -75,6 +75,12 @@
           exact
           slot="title"
         />
+        <q-route-tab
+          icon="alarm"
+          to="/me"
+          exact
+          slot="title"
+        />
       </q-tabs>
     </q-layout-footer>
   </q-layout>

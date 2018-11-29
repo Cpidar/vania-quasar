@@ -2,8 +2,8 @@ import jMoment from 'moment-jalaali'
 jMoment.locale('fa')
 jMoment.loadPersian({ usePersianDigits: false, dialect: 'persian-modern' })
 import { Subject, range, asyncScheduler } from 'rxjs'
-import { map, shareReplay, switchMap, tap, mergeMap, share, filter, observeOn } from 'rxjs/operators'
-import { getBadTimeEvents, checkHasPHN, checkBadTime } from '../events/event'
+import { map, shareReplay, switchMap, tap, mergeMap, share, filter, observeOn, bufferCount } from 'rxjs/operators'
+import { getBadTimeEvents, checkHasPHN, checkBadTime, getPHNFromDB } from '../events/event'
 
 const moment = (str) => jMoment(str, 'jYYYY-jMM-jDD')
 
@@ -59,8 +59,15 @@ export const present = async (data) => {
       initialModel.selectedDay = p
       return initialModel
 
-      // case 'getEvent':
-      //     return { ...model, PHN: data.PHN, events: data.events, period: data.period };
+    case 'gotPeriod':
+      initialModel.status = 'PERIOD_CHANGE'
+      initialModel.period.start = initialModel.selectedDay
+      return initialModel
+
+    case 'changePeriod':
+      initialModel.status = 'PERIOD_CHANGE'
+      initialModel.period = data.payload
+      return initialModel
 
     default:
       return initialModel
@@ -133,18 +140,24 @@ export const getDaysInMonth = model$.pipe(
   share()
 )
 
+export const getMonth = getDaysInMonth.pipe(
+  bufferCount(7),
+  bufferCount(6),
+  shareReplay()
+)
+
 export const getPHNState = getDaysInMonth.pipe(mergeMap((day) => checkHasPHN(`PHN${day.jDate}`)))
 
 export const getBadTimeState = getDaysInMonth.pipe(mergeMap((day) => checkBadTime(day.jDate, 'jYYYY-jMM-jDD')))
 
-export const selectDone = model$.pipe(
+export const getSelectedDay = model$.pipe(
   // distinctUntilKeyChanged('selectedDay'),
   tap(() => console.log('new select')),
   map((m) => moment(m.selectedDay).format('jYYYY-jMM-jDD')),
   shareReplay()
 )
 
-export const getSelectedDay = model$.pipe(
+export const getSelectedDayObj = model$.pipe(
   // distinctUntilKeyChanged('selectedDay'),
   tap(() => console.log('get selected date')),
   map((m) => {
@@ -160,6 +173,17 @@ export const getSelectedDay = model$.pipe(
 export const getSelectedEvent = model$.pipe(
   map((m) => m.selectedDay),
   switchMap((date) => getBadTimeEvents(date, 'jYYYY-jMM-jDD'))
+)
+
+export const getSelectedPHN = model$.pipe(
+  map((m) => m.selectedDay),
+  switchMap((date) => getPHNFromDB('PHN-' + date)),
+  tap(x => console.log(x)),
+  share()
+)
+
+export const getPHNValues = getSelectedPHN.pipe(
+  map(phn => [phn.bleedState, phn.sexState, phn.moodState, phn.symptomState].flat().filter(x => x !== ''))
 )
 
 export const dispatch = (type, payload) => {

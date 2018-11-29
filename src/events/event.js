@@ -1,5 +1,6 @@
 import PouchDB from 'pouchdb'
-
+import upsert from 'pouchdb-upsert'
+PouchDB.plugin(upsert)
 // import persian from './persian';
 // import lunar from './lunar';
 // import solar from './solar';
@@ -17,7 +18,7 @@ import moonInSco from './bad-time.json'
 
 //    const _self: momentJalaali.Moment;
 //    const _allevents: Event[];
-const db = new PouchDB('my-data')
+const db = new PouchDB('my-data', {revs_limit: 1, auto_compaction: true})
 const allevents = moonInSco
 
 // tslint:disable-next-line:no-shadowed-variable
@@ -44,7 +45,7 @@ export const getBadTimeEvents = async (arg1, arg2, arg3, arg4) => {
 
 export const checkBadTime = (date, format) => getBadTimeEvents(date, format).then((e) => e.length > 0)
 
-export const getPHNFromDB = (start, end) => {
+export const getPHNsFromDB = (start, end) => {
   return from(db.allDocs({
     include_docs: true,
     startkey: start,
@@ -52,8 +53,23 @@ export const getPHNFromDB = (start, end) => {
   }).then((docs) => docs.rows))
 }
 
-export const putToDB = (doc) => {
-  return from(db.put(doc, { force: true }).then((res) => res.ok))
+export const getPHNFromDB = (id) => {
+  return db.get(id).catch(err => {
+    if (err.name === 'not_found') {
+      return {
+        bleedState: '',
+        sexState: '',
+        symptomState: [],
+        moodState: []
+      }
+    } else { // hm, some other error
+      throw err
+    }
+  })
+}
+
+export const putToDB = (id, doc) => {
+  return db.upsert(id, doc).then(res => res.ok)
 }
 
 export const bulkPut = () => {

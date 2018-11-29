@@ -56,6 +56,7 @@ module.exports = function (ctx) {
         'QListHeader',
         'QItem',
         'QItemMain',
+        'QItemTile',
         'QItemSide',
         'QItemSeparator',
         'QTabs',
@@ -64,12 +65,11 @@ module.exports = function (ctx) {
         'QRouteTab',
         'QDialog',
         'QField',
+        'QInput',
+        'QSlider',
+        'QToggle',
         'QCollapsible',
-        'ScrollFire',
-        'QScrollArea',
-        'QScrollObservable',
         'QPageSticky',
-        'Scroll',
         'QCheckbox',
         'QCard',
         'QCardTitle',
@@ -77,7 +77,8 @@ module.exports = function (ctx) {
         'QCardMedia',
         'QCardSeparator',
         'QCardActions',
-        'QModal'
+        'QModal',
+        'QModalLayout'
       ],
       directives: [
         'Ripple',
