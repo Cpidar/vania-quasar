@@ -72,6 +72,10 @@ export const putToDB = (id, doc) => {
   return db.upsert(id, doc).then(res => res.ok)
 }
 
+export const putIfNotExists = (id, doc) => {
+  return db.putIfNotExists(id, doc)
+}
+
 export const bulkPut = () => {
   return false
 }

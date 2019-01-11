@@ -8,41 +8,43 @@
             <q-btn flat color="secondary" icon="keyboard_arrow_left" @click="goToNextMonth" />
             <h4 class="chart">نمودار</h4>
         </header>
-        <section class="calendarday">
-            <div>شنبه</div>
-            <div>یکشنبه</div>
-            <div>دوشنبه</div>
-            <div>سه شنبه</div>
-            <div>چهارشنبه</div>
-            <div>پنج شنبه</div>
-            <div>جمعه</div>
-        </section>
-        <section class="calendar" v-touch-swipe.righ="goToNextMonth">
-            <section class="week" v-for="(week, i) of month$" :key="'week' + i">
-                <div v-for="(day, index) of week" :key="day.jDate"
-                :ref="day.jDate"
-                :class="{
-                        today: day.isToday,
-                        select: day.jDate === getSelectedDay$,
-                        period: day.isPeriod,
-                        'has-note': phnState[7*i + index],
-                        'has-note': badTimeState[7*i + index],
-                    }"
-                v-stream:click="{subject: select$, data: day.jDate}">
-                    <span style="pointer-events: none;">{{day.day}}</span></div>
-            </section>
-        </section>
-
+      <swiper dir="rtl" ref="mySw" :options="swiperOpt" @slideChangeTransitionEnd="monthChange" >
+        <swiper-slide v-for="(month, index) of monthList" :key="month">
+          <Calendar :current="month" v-if="(index - slide) < 2 && (index - slide) > -2"/>
+        </swiper-slide>
+      </swiper>
         <section class="calnav">
-            <!-- <svg class="line">
-                        <line x1="0" x2="100%"/>
-                    </svg> -->
             <div><i style=color:#EB4986 class="fas fa-circle"></i> & پریود</div>
             <div><i style=color:#6CC4D9 class="fas fa-circle"></i> & تخمک </div>
             <div><i style=color:#6CC4D9 class="fas fa-heart"></i> & بارداری </div>
-            <!-- <svg class="line">
-                    <line x1="0" x2="100%"/>
-                </svg> -->
+        </section>
+        <section>
+          <q-list>
+              <q-item>
+                <q-item-main>
+                    <q-item-tile label>شروع پریود</q-item-tile>
+                </q-item-main>
+                <q-item-side right>
+                  <q-toggle
+                    v-model="check4"
+                    checked-icon="sentiment very dissatisfied"
+                    unchecked-icon="sentiment very satisfied"
+                  />
+                </q-item-side>
+            </q-item>
+            <q-item>
+                <q-item-main>
+                    <q-item-tile label>پایان پریود</q-item-tile>
+                </q-item-main>
+                <q-item-side right>
+                  <q-toggle
+                    v-model="check4"
+                    checked-icon="sentiment very satisfied"
+                    unchecked-icon="sentiment very dissatisfied"
+                  />
+                </q-item-side>
+            </q-item>
+          </q-list>
         </section>
         <section>
           <dl class="q-my-md">
@@ -50,10 +52,6 @@
           </dl>
         </section>
         <section class="column items-center gutter-sm">
-            <!-- <div><q-btn round size="md" color="pink" icon="card_giftcard" @click="bleed"/></div>
-            <div><q-btn round color="blue" icon="mood" /></div>
-            <div><q-btn round color="orange" icon="card_giftcard" @click="gotPeriod"/></div>
-            <div><q-btn round color="purple" icon="face" /></div> -->
             <transition
               appear
               enter-active-class="animated fadeIn"
@@ -61,38 +59,20 @@
             >
           <div class="row no-wrap gutter-xs justify-center" key="phn-list">
               <div v-for="phn of phnValues$" :key="phn">
-                <img :src="'../assets/icons/ic_' + phn + '.png'" width="50px" height="50px">
+                <img :src="'../assets/icons/ic_' + phn + '.png'" width="30px" height="30px">
               </div>
           </div>
             </transition>
           <div>
-            <q-page-sticky position="bottom" :offset="[18, 18]">
-              <q-btn rounded icon="add" color="primary" label="ثبت وضعیت" @click="bleed"/>
+            <q-page-sticky position="bottom-right" :offset="[18, 18]">
+              <q-btn round icon="add" color="primary" size="lg" @click="bleed"/>
             </q-page-sticky>
           </div>
           <div >
-            <!-- <q-input
-              type="textarea"
-              float-label="یادداشت"
-              :max-height="20"
-              rows="1"
-              inverted
-              color="cyan"
-              class="q-mx-md"
-            /> -->
           </div>
         </section>
         <phn-modal :phn-modal-state="phnModalState" @close="phnModalState = false" :phn="phn$" :id="'PHN-'+getSelectedDay$"/>
-        <!-- <footer>
-                <a href="http://"><i class="fas fa-bell"></i></a>
-                <a href="http://"><i class="fas fa-home"></i></a>
-                <a href="http://" class="plus"><i class="fas fa-plus-circle"></i></a>
-                <a href="http://"><i class="fas fa-chart-line"></i></i></a>
-                <a href="http://"><i class="fas fa-user"></i></a>
-            </footer> -->
-      <!-- <q-scroll-observable @scroll="userHasScrolled" /> -->
     </div>
-    <!-- jhjhkj -->
 
 </template>
 
@@ -106,29 +86,27 @@ import {
   getSelectedDay,
   getMonth,
   getSelectedPHN,
-  getPHNValues
+  getPHNValues,
+  getPeriodDays,
+  getMonthList
 } from '../state/index'
 import {
-  // map,
   tap,
-  // pairwise,
-  // startWith,
   pluck,
-  // switchMapTo,
-  // distinctUntilKeyChanged,
   bufferCount,
+  buffer,
   share
-  // subscribeOn
-  // observeOn,
-  // distinctUntilChanged
-  // observeOn
 } from 'rxjs/operators'
 // import { asyncScheduler } from 'rxjs'
 import PhnModal from '../components/phn-modal.vue'
+// import posed from 'vue-pose'
+import { tween, styler } from 'popmotion'
+import Calendar from '../components/calendar-comp.vue'
 
 export default {
   components: {
-    PhnModal
+    PhnModal,
+    Calendar
   },
   domStreams: ['select$'],
 
@@ -136,7 +114,14 @@ export default {
     return {
       phnState: Array.from({length: 42}, (v) => false),
       badTimeState: Array.from({length: 42}, (v) => false),
-      phnModalState: false
+      phnModalState: false,
+      isVisible: 'show',
+      check4: false,
+      slide: 20,
+      monthList: [],
+      swiperOpt: {
+        initialSlide: 20
+      }
     }
   },
 
@@ -145,37 +130,63 @@ export default {
     dispatch('init', payload)
     this.$subscribeTo(getPHNState.pipe(
       bufferCount(42)
-      // subscribeOn(asyncScheduler)
-    // eslint-disable-next-line no-return-assign
-    ), x => this.$data.phnState = x)
-
+    ), x => { this.$data.phnState = x })
+    
     this.$subscribeTo(getBadTimeState.pipe(
       bufferCount(42)
-      // subscribeOn(asyncScheduler)
-    // eslint-disable-next-line no-return-assign
-    ), x => this.$data.badTimeState = x)
+    ), x => { this.$data.badTimeState = x })
   },
 
   mounted () {
   },
 
   created () {
+    getMonthList.subscribe(l => { this.monthList = l })
   },
 
   updated () {},
 
   methods: {
     goToNextMonth () {
-      dispatch('goToNextMonth')
+      const calStyler = styler(this.$el.querySelector('.calendar'), {enableHardwareAcceleration: true})
+      tween({
+        from: 0,
+        to: {x: '100%'}
+      }).start({
+        update: v => calStyler.set(v),
+        complete: () => {
+          dispatch('goToNextMonth')
+          tween({
+            from: {x: '-100%'},
+            to: {x: 0}
+          }).start(calStyler.set)
+        }
+      })
     },
     goToPrevMonth () {
-      dispatch('goToPrevMonth')
+      const calStyler = styler(this.$el.querySelector('.calendar'), {enableHardwareAcceleration: true})
+      tween({
+        from: 0,
+        to: {x: '-100%'}
+      }).start({
+        update: v => calStyler.set(v),
+        complete: () => {
+          dispatch('goToPrevMonth')
+          tween({
+            from: {x: '100%'},
+            to: {x: 0}
+          }).start(calStyler.set)
+        }
+      })
     },
     bleed () {
       this.$data.phnModalState = true
     },
     gotPeriod () {
       dispatch('gotPeriod')
+    },
+    animHandler () {
+      console.log('anim')
     }
   },
 
@@ -192,13 +203,15 @@ export default {
     return {
       selectClick$,
       getSelectedDay$: getSelectedDay,
+      // eslint-disable-next-line no-return-assign
       month$: getMonth,
       day$: date$.pipe(pluck('day')),
       monthName$: date$.pipe(pluck('month')),
       year$: date$.pipe(pluck('year')),
       event$: getSelectedEvent,
       phn$: getSelectedPHN,
-      phnValues$: getPHNValues
+      phnValues$: getPHNValues,
+      periodDays$: getPeriodDays.pipe(buffer(getMonth))
     }
   }
 }
@@ -236,13 +249,13 @@ export default {
 //     height: calc(var(--calendar-height) + 5 * var(--calendar-gap));
 // }
 .week {
-  display: grid;
-  grid: 1fr / repeat(7, 2fr);
-  grid-column-gap: 0;
-  justify-items: center;
+  // display: grid;
+  // grid: 1fr / repeat(7, 2fr);
+  // grid-column-gap: 0;
+  // justify-items: center;
   width: var(--calendar-width);
-  height: var(--calendar-height) + 5 * 10px;
-  margin-top: 10px;
+  height: calc(var(--cell-height) + 2.5px);
+  margin-top: 2px;
   transition: all 0.2s;
 }
 
@@ -282,8 +295,9 @@ export default {
 }
 
 .calendar > section > div {
-  width: 100%;
+  width: (100% / 7);
   height: 100%;
+  float: left;
   text-align: center;
   line-height: var(--cell-height);
 }
@@ -365,20 +379,21 @@ footer {
 }
 
 .period {
-  background-color: #6cc4d9;
-  color: white;
+ border-top: 2.5px solid #6cc4d9;
+ border-bottom: 2.5px solid #6cc4d9;
+  // color: white;
 }
 
-// .period:first-of-type {
-//   background-color: #6cc4d9;
-//   border-radius: 0 var(--cell-height) var(--cell-height) 0;
-//   color: white;
-// }
-
-.period :nth-last-of-type(1) {
-  background-color: #6cc4d9;
-  color: white;
+.period-start {
+  @extend .period;
+ border-left: 2.5px solid #6cc4d9;
   border-radius: var(--cell-height) 0 0 var(--cell-height);
+}
+
+.period-end {
+  @extend .period;
+ border-right: 2.5px solid #6cc4d9;
+  border-radius: 0 var(--cell-height) var(--cell-height) 0;
 }
 
 .calnav {

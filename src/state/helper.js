@@ -1,5 +1,9 @@
 import * as R from 'ramda'
+import jMoment from 'moment-jalaali'
+jMoment.locale('fa')
+jMoment.loadPersian({ usePersianDigits: false, dialect: 'persian-modern' })
 
+const moment = (str) => jMoment(str, 'jYYYY-jMM-jDD')
 export const toPersianDigit = (a) => {
   if (typeof a === 'number') {
     a = a.toString()
@@ -89,3 +93,24 @@ export const persianTohijri = (date) => R.compose(jdToHijri, g2d)(date.year(), d
 //     return d + mDays + ((epYear * 682) - 110) / 2816 + (epYear - 1) * 365
 //     + (epBase / 2820) * 1029983 + (PERSIAN_EPOCH - 1);
 // }
+
+export const computeDaysInMonth = (counter, m) => {
+  const jDate = moment(m).clone().add(counter, 'day')
+  const day = jDate.jDate()
+  // const hDate = add(d, persianTohijri(newMonth))
+  //     .map(h => { return { day: h[0], month: h[1], year: h[2] } })[0];
+  const isToday = jDate.isSame(new Date(), 'day')
+  const currentMonthCond = jDate.jMonth() - moment(m).jMonth()
+
+  return {
+    jDate: jDate.format('jYYYY-jMM-jDD'),
+    day,
+    isToday,
+    currentMonthCond
+  }
+}
+
+export const dayInMonth = (month) => {
+  return Array.from({length: 42}, (v, i) => i - moment(month).clone().weekday())
+    .map(d => computeDaysInMonth(d, month))
+}

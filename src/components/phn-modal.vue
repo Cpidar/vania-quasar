@@ -1,6 +1,19 @@
 <template>
   <q-modal v-model="showModal">
     <q-modal-layout>
+          <q-toolbar slot="header">
+      <q-btn
+        flat
+        round
+        dense
+        v-close-overlay
+        icon="keyboard_arrow_right"
+        @click="close"
+      />
+      <q-toolbar-title>
+        یادداشتهای سلامتی
+      </q-toolbar-title>
+    </q-toolbar>
       <div>
         <q-list>
           <div class="q-subheading q-px-sm">میزان خونریزی</div>
@@ -48,7 +61,7 @@
             </div>
           </q-item>
         </q-list>
-        <q-btn color="primary" @click="close" label="ثبت" />
+        <!-- <q-btn color="primary" @click="close" label="ثبت" /> -->
       </div>
     </q-modal-layout>
   </q-modal>

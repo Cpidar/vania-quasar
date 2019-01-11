@@ -4,7 +4,8 @@ module.exports = function (ctx) {
   return {
     // app plugins (/src/plugins)
     plugins: [
-      'rx'
+      'rx',
+      'swiper'
     ],
     css: [
       'app.styl'
@@ -78,7 +79,10 @@ module.exports = function (ctx) {
         'QCardSeparator',
         'QCardActions',
         'QModal',
-        'QModalLayout'
+        'QModalLayout',
+        'QCarousel',
+        'QCarouselSlide',
+        'QCarouselControl'
       ],
       directives: [
         'Ripple',

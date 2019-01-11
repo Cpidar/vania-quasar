@@ -20,16 +20,61 @@
           <div><span>7</span></div>
       </section>
       <div class="circle">
-          <h5 class="date">28 فروردین 1397</h5>
+          <h5 class="date">{{getCurrent}}</h5>
           <h3 class="circlename">:</h3>
           <div></div>
       </div>
+      <!-- <q-carousel ref="carousolCal" class="text-white" infinite arrows @slide="changeMonthSlide"  v-model="slide"> -->
+        <!-- <q-carousel-slide class="bg-primary" v-for="(month) of monthList" :key="month"> -->
+          <!-- <Calendar :current="month" v-if="(index - slide) < 2 && (index - slide) > -2"/> -->
+        <!-- </q-carousel-slide> -->
+      <!-- </q-carousel> -->
     </div>
 </template>
 
 <script>
 export default {
-  name: 'Home'
+  name: 'Home',
+  data () {
+    return {
+    }
+  },
+  computed: {
+    getCurrent () {
+      return this.monthList[this.slide]
+    }
+  },
+  created () {
+  },
+  beforeMount () {
+  },
+  mounted () {
+    // this.$nextTick(() => { this.slide = this.$ref.mySw.activeIndex })
+  },
+  methods: {
+    changeMonthSlide (s, d) {
+      // if (d === 'next') {
+      //   const next = this. slide - 1;
+      //   this.monthList[(next > -1 ? next : 2)] = '1397-10-01'
+      //   this.current.push('1397-12-01')
+      //   if (this.current.length >= 1) {
+      //     this.current.shift()
+      //   }
+      // } else {
+      //   this.current.unshift('1397-08-01')
+      //   if (this.current.length >= 1) {
+      //     this.current.pop()
+      //   }
+      // }
+    },
+    currentSlide () {
+      this.slide = 20
+    },
+    monthChange () {
+      console.log(this.$refs.mySw.swiper.activeIndex)
+      this.$nextTick(() => { this.slide = this.$refs.mySw.swiper.activeIndex })
+    }
+  }
 }
 </script>
 
