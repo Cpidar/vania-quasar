@@ -60,8 +60,12 @@
       <router-view />
     </q-page-container>
     <q-layout-footer>
-      <q-tabs inverted position="bottom" animated>
-  <!-- Tabs - notice slot="title" -->
+      <q-tabs
+        inverted
+        position="bottom"
+        animated
+      >
+        <!-- Tabs - notice slot="title" -->
         <q-route-tab
           icon="mail"
           to="/"
@@ -91,7 +95,7 @@ import { openURL } from 'quasar'
 
 export default {
   name: 'MyLayout',
-  data () {
+  data() {
     return {
       leftDrawerOpen: this.$q.platform.is.desktop
     }

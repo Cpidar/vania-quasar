@@ -27,6 +27,7 @@ module.exports = {
   'rules': {
     // allow async-await
     'generator-star-spacing': 'off',
+    'space-before-function-paren': ['error', {"anonymous": "always", "named": "never", "asyncArrow": "always"}],
 
     // allow paren-less arrow functions
     'arrow-parens': 0,

@@ -12,12 +12,12 @@
     <section class="calendar">
       <Day
         v-for="(day) of month"
+        v-model="selectedDay"
         :key="day.jDate"
         :date="day.jDate"
         :today="day.isToday"
         :inactive="day.currentMonthCond"
-        v-model="selectedDay"
-        :event-type="eventType(day.jDate)"
+        :event-type="events[day.jDate]"
       >
         {{day.day}}
       </Day>
@@ -27,35 +27,37 @@
 
 <script>
 
-import { dayInMonth } from '../state/helper'
+import { daysInMonth, getDaysHaveEvents } from '../state/index'
 import Day from './day.vue'
-import { Vue, Component, Prop, Emit } from 'vue-property-decorator'
+import { Vue, Component, Prop } from 'vue-property-decorator'
+import * as R from 'ramda'
+import { bufferTime } from 'rxjs/operators'
 
 @Component({
   components: { Day }
 })
 export default class Calendar extends Vue {
   @Prop({ type: String, required: true }) current
-  @Prop({default: () => [{date: '', type: ''}]}) events
+  events = {}
   selectedDay = ''
+  month = []
 
-  get month () {
-    return dayInMonth(this.current)
+  beforeMount() {
+    this.$subscribeTo(daysInMonth(this.current),
+      (d) => {
+        this.month = [...this.month, d]
+        if (d.isToday) { this.selectedDay = d.jDate }
+      },
+      function (err) { console.log(err) },
+      () => { console.log('complete') }
+    )
+    this.$subscribeTo(getDaysHaveEvents(this.current).pipe(bufferTime(500)), (ev) => {
+      this.events = R.reduce(R.mergeDeepRight, this.events, ev)
+    })
   }
 
-  eventType (date) {
-    const evType = this.events.filter(ev => ev.date === this.selectedDay).map(ev => ev.type)
-    return evType[0]
-  }
-
-  @Emit('event')
-  selectedEvent () {
-    const event = this.events.filter(ev => ev.date === this.selectedDay)
-    return event
-  }
-
-  mounted () {
-    this.selectedDay = this.month.filter(d => d.isToday).map(d => d.jDate)[0]
+  mounted() {
+    this.selectedDay = this.selectedDay || this.current
   }
 }
 </script>
@@ -63,12 +65,12 @@ export default class Calendar extends Vue {
 <style lang="scss" scoped>
 @import url("../main.scss");
 
-// .fix {
-//   position: fixed;
-//   top: 58px;
-//   z-index: 100;
-//   height: 45px;
-// }
+.calendar {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  margin: 0 auto;
+}
 
 .calendarday > div {
   width: (100% / 7);

@@ -1,8 +1,18 @@
 <template>
   <div class="ir-container">
     <label>
-      <input type="radio" :checked="shouldBeChecked" @change="updateInput" value="value" />
-      <img width="50px" height="50px" :src="change" :key="change"/>
+      <input
+        type="radio"
+        :checked="shouldBeChecked"
+        @change="updateInput"
+        value="value"
+      />
+      <img
+        width="50px"
+        height="50px"
+        :src="change"
+        :key="change"
+      />
       <div>{{label}}</div>
     </label>
   </div>
@@ -33,17 +43,17 @@ export default {
     }
   },
   computed: {
-    change () {
+    change() {
       return this.modelValue === this.value
         ? this.checkedIcon
         : this.uncheckedIcon
     },
-    shouldBeChecked () {
+    shouldBeChecked() {
       return this.modelValue === this.value
     }
   },
   methods: {
-    updateInput (event) {
+    updateInput(event) {
       this.$emit('change', this.value)
     }
   }

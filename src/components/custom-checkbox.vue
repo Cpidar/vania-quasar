@@ -1,9 +1,20 @@
 <template>
   <div class="ic-container">
     <label>
-      <input type="checkbox" :checked="shouldBeChecked" @change="updateInput" />
+      <input
+        type="checkbox"
+        :checked="shouldBeChecked"
+        @change="updateInput"
+      />
       <div :class="{box: styled && shouldBeChecked}">
-        <img width="50px" height="50px" :src="change" :key="change" :class="{icon: styled && shouldBeChecked}" :style="{backgroundColor: shouldBeChecked ? bgColor : 'transparent'}"/>
+        <img
+          width="50px"
+          height="50px"
+          :src="change"
+          :key="change"
+          :class="{icon: styled && shouldBeChecked}"
+          :style="{backgroundColor: shouldBeChecked ? bgColor : 'transparent'}"
+        />
       </div>
       <div>{{label}}</div>
     </label>
@@ -50,7 +61,7 @@ export default {
     checked: false
   }),
   computed: {
-    change () {
+    change() {
       if (this.modelValue instanceof Array) {
         return this.modelValue.indexOf(this.value) === -1
           ? this.uncheckedIcon
@@ -60,7 +71,7 @@ export default {
         ? this.uncheckedIcon
         : this.checkedIcon
     },
-    shouldBeChecked () {
+    shouldBeChecked() {
       if (this.modelValue instanceof Array) {
         return this.modelValue.includes(this.value)
       }
@@ -69,7 +80,7 @@ export default {
     }
   },
   methods: {
-    updateInput (event) {
+    updateInput(event) {
       let isChecked = event.target.checked
 
       if (this.modelValue instanceof Array) {
@@ -94,7 +105,7 @@ export default {
 .icon {
   border-radius: 50%;
 }
-.box{
+.box {
   position: relative;
 }
 .box::after {

@@ -3,7 +3,6 @@ import jMoment from 'moment-jalaali'
 jMoment.locale('fa')
 jMoment.loadPersian({ usePersianDigits: false, dialect: 'persian-modern' })
 
-const moment = (str) => jMoment(str, 'jYYYY-jMM-jDD')
 export const toPersianDigit = (a) => {
   if (typeof a === 'number') {
     a = a.toString()
@@ -45,7 +44,7 @@ const hijriMonth = [
   [1437, 29, 30, 30, 29, 30, 29, 29, 30, 29, 29, 30, 30],
   [1438, 29, 30, 30, 30, 29, 30, 29, 29, 30, 29, 29, 30],
   [1439, 29, 30, 30, 30, 30, 29, 30, 29, 29, 30, 29, 29],
-  [1440, 30, 29, 30, 30, 30, 29, 29]
+  [1440, 30, 29, 30, 30, 30, 29, 30, 29, 30, 29, 30, 30]
 ]
 
 const g2d = (gy, gm, gd) => (div((gy + div(gm - 8, 6) + 100100) * 1461, 4) +
@@ -65,9 +64,9 @@ const getJdHijri = (months, start) => {
 
   return t.length === 0 ? [jdHead] : R.prepend(jdHead, getJdHijri(t, R.last(jdHead)))
 }
-const jdHijriMonth = R.memoize(getJdHijri)(hijriMonth, jdStart)
+const jdHijriMonth = R.memoizeWith(R.identity, getJdHijri)(hijriMonth, jdStart)
 
-const jdToHijri = (jd) => {
+export const jdToHijri = (jd) => {
   const jdHijriTable = jdHijriMonth
   const start = startYear
   const yearIndex = jdHijriTable.map((x) => x[0]).filter((x) => x < jd).length - 1
@@ -80,7 +79,7 @@ const jdToHijri = (jd) => {
 export const add = (day, start) => jdToHijri(g2d(start[0], start[1], start[2]) + day)
 
 // tslint:disable-next-line:max-line-length
-export const persianTohijri = (date) => R.compose(jdToHijri, g2d)(date.year(), date.month() + 1, date.date())
+// export const persianTohijri = (g) => R.compose(jdToHijri, g2d)(gy, gm, gd)
 
 // const persionToJd = (y, m, d) => {
 //     const PERSIAN_EPOCH = 1948321;
@@ -93,24 +92,3 @@ export const persianTohijri = (date) => R.compose(jdToHijri, g2d)(date.year(), d
 //     return d + mDays + ((epYear * 682) - 110) / 2816 + (epYear - 1) * 365
 //     + (epBase / 2820) * 1029983 + (PERSIAN_EPOCH - 1);
 // }
-
-export const computeDaysInMonth = (counter, m) => {
-  const jDate = moment(m).clone().add(counter, 'day')
-  const day = jDate.jDate()
-  // const hDate = add(d, persianTohijri(newMonth))
-  //     .map(h => { return { day: h[0], month: h[1], year: h[2] } })[0];
-  const isToday = jDate.isSame(new Date(), 'day')
-  const currentMonthCond = jDate.jMonth() - moment(m).jMonth()
-
-  return {
-    jDate: jDate.format('jYYYY-jMM-jDD'),
-    day,
-    isToday,
-    currentMonthCond
-  }
-}
-
-export const dayInMonth = (month) => {
-  return Array.from({length: 42}, (v, i) => i - moment(month).clone().weekday())
-    .map(d => computeDaysInMonth(d, month))
-}

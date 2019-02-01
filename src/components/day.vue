@@ -3,50 +3,59 @@
     :class="{
             day: true,
             today: today,
-            select: date === selectedDay,
-            inactive: inactive,
-            period: eventType === 'period',
-            periodStart: eventType === 'period-start',
-            periodEnd: eventType === 'period-end',
-            multiDot: eventType === 'marked'
+            select: date == selectedDay,
+            'period-pr': eventType.cycle  === 'period-pr',
+            'period-start-pr': eventType.cycle === 'period-start-pr',
+            'period-end-pr': eventType.cycle ==='period-end-pr',
+            'has-note': hasNote
         }"
     @click="selectDay"
     :value="date"
   >
-    <span style="pointer-events: none;">
+    <span style="pointer-events: none;" :class="{inactive: inactive}">
       <slot></slot>
     </span>
   </div>
 </template>
 
 <script>
-import { Vue, Component, Prop, Emit } from 'vue-property-decorator'
+import { Vue, Component, Prop, Model, Emit } from 'vue-property-decorator'
+import { dispatch } from '../state'
 
-@Component({
-  model: {
-    prop: 'selectedDay',
-    event: 'select'
-  }
-})
+@Component({})
 export default class Day extends Vue {
   @Prop({ type: String, required: true }) date
-  @Prop({ type: String, default: '' }) selectedDay
   @Prop({ type: Boolean, default: false }) today
-  @Prop({ type: String, default: '' }) eventType
+  @Prop({default: () => ({ cycle: '', events: [] })}) eventType
   @Prop() inactive
+  events = {cycle: '', events: []}
+  // v-model for class select
+  @Model('select', {type: String}) selectedDay
+
+  // @Watch('eventType')
+  // getEv(val) {
+  //   console.log(val)
+  //   // this.events = Object.assign(this.events, val)
+  // }
+
+  get hasNote() {
+    // return this.eventType.event.indexOf('MIS') !== -1
+  }
 
   @Emit('select')
-  selectDay (ev) {
+  selectDay(ev) {
+    dispatch('selectDay', { selectedDay: ev.target.getAttribute('value'), events: this.eventType })
     return ev.target.getAttribute('value')
   }
 }
 </script>
 
 <style lang="scss" scoped>
+@import url("../main.scss");
+
 .day {
-  width: (100% / 7);
-  height: 100%;
-  float: left;
+  width: (100% / 7.2);
+  height: var(--cell-height);
   text-align: center;
   line-height: var(--cell-height);
 }
@@ -80,7 +89,7 @@ export default class Day extends Vue {
   margin: auto;
 }
 
-.period {
+.period-pr {
   border-top: 2.5px solid #6cc4d9;
   border-bottom: 2.5px solid #6cc4d9;
   // color: white;
@@ -90,24 +99,24 @@ export default class Day extends Vue {
   position: relative;
 }
 
-.has-note::before {
-  content: "\f004";
-  font-family: "FontAwesome";
-  font-style: normal;
-  font-weight: normal;
-  text-decoration: inherit;
-  font-size: 10px;
-  display: block;
-  position: absolute;
-  top: -10%;
-  right: 70%;
-  bottom: 0;
-  width: 10px;
-  height: 10px;
-  color: #6cc4d9;
-  /* background-color: #865FC1;
-    border-radius: 50%; */
-}
+// .has-note::before {
+//   content: "\f004";
+//   font-family: "FontAwesome";
+//   font-style: normal;
+//   font-weight: normal;
+//   text-decoration: inherit;
+//   font-size: 10px;
+//   display: block;
+//   position: absolute;
+//   top: -10%;
+//   right: 70%;
+//   bottom: 0;
+//   width: 10px;
+//   height: 10px;
+//   color: #6cc4d9;
+//   /* background-color: #865FC1;
+//     border-radius: 50%; */
+// }
 .has-note::after {
   content: "";
   display: block;
@@ -121,14 +130,14 @@ export default class Day extends Vue {
   border-radius: 50%;
 }
 
-.period-start {
-  @extend .period;
+.period-start-pr {
+  @extend .period-pr;
   border-left: 2.5px solid #6cc4d9;
   border-radius: var(--cell-height) 0 0 var(--cell-height);
 }
 
-.period-end {
-  @extend .period;
+.period-end-pr {
+  @extend .period-pr;
   border-right: 2.5px solid #6cc4d9;
   border-radius: 0 var(--cell-height) var(--cell-height) 0;
 }

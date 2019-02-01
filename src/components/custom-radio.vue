@@ -1,9 +1,23 @@
 <template>
   <div class="ir-container">
     <label>
-      <input type="radio" :checked="shouldBeChecked" @change="updateInput" value="value" />
-      <div :class="{box: styled && shouldBeChecked}" :style="{backgroundColor: shouldBeChecked ? bgColor : 'transparent'}">
-        <img width="50px" height="50px" :src="change" :key="change" :class="{icon: styled && shouldBeChecked}" />
+      <input
+        type="radio"
+        :checked="shouldBeChecked"
+        @change="updateInput"
+        value="value"
+      />
+      <div
+        :class="{box: styled && shouldBeChecked}"
+        :style="{backgroundColor: shouldBeChecked ? bgColor : 'transparent'}"
+      >
+        <img
+          width="50px"
+          height="50px"
+          :src="change"
+          :key="change"
+          :class="{icon: styled && shouldBeChecked}"
+        />
       </div>
       <div>{{label}}</div>
     </label>
@@ -42,17 +56,17 @@ export default {
     }
   },
   computed: {
-    change () {
+    change() {
       return this.modelValue === this.value
         ? this.checkedIcon || this.uncheckedIcon
         : this.uncheckedIcon
     },
-    shouldBeChecked () {
+    shouldBeChecked() {
       return this.modelValue === this.value
     }
   },
   methods: {
-    updateInput (event) {
+    updateInput(event) {
       this.$emit('change', this.value)
     }
   }

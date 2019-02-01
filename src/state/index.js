@@ -2,46 +2,35 @@
 import jMoment from 'moment-jalaali'
 jMoment.locale('fa')
 jMoment.loadPersian({ usePersianDigits: false, dialect: 'persian-modern' })
-import { Subject, range, asyncScheduler } from 'rxjs'
-import { map, shareReplay, switchMap, tap, mergeMap, share, filter, observeOn, bufferCount, pluck, take, toArray } from 'rxjs/operators'
-import { getBadTimeEvents, checkHasPHN, checkBadTime, getPHNFromDB, putToDB } from '../events/event'
 
+import { Subject, range, asyncScheduler, merge, asapScheduler, from } from 'rxjs'
+import { map, shareReplay, switchMap, switchMapTo, tap, mergeMap, share, filter, observeOn, bufferCount, pluck, take, toArray, concatMap, flatMap, startWith, distinctUntilKeyChanged, first, mapTo, combineLatest } from 'rxjs/operators'
+import { getBadTimeEvents, checkHasPHN, getPHNFromDB, putToDB, getPHNsFromDB } from '../events/event'
+import { dayState } from './cycle'
 const moment = (str) => jMoment(str, 'jYYYY-jMM-jDD')
 
 export const initialModel = {
-  status: 'init',
+  status: 'INIT',
   month: jMoment().startOf('jMonth').format('jYYYY-jMM-jDD'),
   selectedDay: jMoment().startOf('day').format('jYYYY-jMM-jDD'),
+  today: jMoment().startOf('day').format('jYYYY-jMM-jDD'),
   events: [],
   PHN: [],
-  period: { start: '', cycleLength: 0, periodLength: 0 }
+  currentCycle: { start: '', cycleLength: 0, periodLength: 0 },
+  calculatedCycle: { start: '', cycleLength: 0, periodLength: 0 }
 }
-
-// const actions = (type: string, data?: any) => {
-//     if (type === 'init') {
-//         return ({
-//             events: JSON.parse(data.events),
-//             rEvents: JSON.parse(data.rEvents),
-//             period: JSON.parse(data.period)
-//         });
-//     }
-//     if (type === 'selectDay') { return ({ selectDay: data }); }
-//     if (type === 'goToNextMonth') { return data; }
-//     if (type === 'goToPrevMonth') { return data; }
-//     if (type === 'getEvent') { return events.getFromDB(data.start, data.end); }
-//     if (type === 'addEvent') { return events.putToDB(data); }
-//     if (type === 'resetPeriod') { return data; }
-// };
 
 export const present = async (data) => {
   switch (data.type) {
     case 'init':
-      initialModel.period = data.payload
+      initialModel.status = 'INIT'
+      initialModel.currentCycle = data.payload
       return initialModel
 
     case 'selectDay':
       initialModel.status = 'SELECTED_DAY'
-      initialModel.selectedDay = data.payload
+      initialModel.selectedDay = data.payload.selectedDay
+      initialModel.events = data.payload.events
       return initialModel
 
     case 'goToNextMonth':
@@ -60,14 +49,34 @@ export const present = async (data) => {
       initialModel.selectedDay = p
       return initialModel
 
+    case 'goToMonth':
+      const month = moment(data.payload).format('jYYYY-jMM-jDD')
+      initialModel.status = 'CHANGE_MONTH'
+      initialModel.month = month
+      initialModel.selectedDay = month
+      return initialModel
+
     case 'gotPeriod':
-      initialModel.status = 'PERIOD_CHANGE'
-      initialModel.period.start = initialModel.selectedDay
+      initialModel.status = 'PERIOD_STARTS'
+      initialModel.currentCycle.start = initialModel.selectedDay
+      return initialModel
+
+    case 'endPeriod':
+      const newPerLength = moment(data.payload).diff(moment(initialModel.currentCycle.start), 'days')
+
+      initialModel.status = 'PERIOD-ENDS'
+      initialModel.currentCycle.periodLength = newPerLength
       return initialModel
 
     case 'changePeriod':
       initialModel.status = 'PERIOD_CHANGE'
-      initialModel.period = data.payload
+      initialModel.currentCycle.periodLength = data.payload.periodLength
+      initialModel.currentCycle.cycleLength = data.payload.cycleLength
+      return initialModel
+
+    case 'addEvent':
+      initialModel.status = 'EVENT_ADD'
+      initialModel.events.push(data.payload)
       return initialModel
 
     default:
@@ -75,74 +84,19 @@ export const present = async (data) => {
   }
 }
 
-const calcuteCycle = (date, start, cycle, period) => {
-  const diffDay = date.diff(jMoment(start, 'jYYYY-jMM-jDD'), 'days')
-  if (diffDay >= 0) {
-    const cycleMode = diffDay % cycle
-    const ovulation = cycle - 14
-
-    if (cycleMode < period) {
-      if (cycleMode === 0) {
-        return 'period-start'
-      } else if (cycleMode < period && cycleMode === period - 1) {
-        return 'period-end'
-      } else {
-        return 'period'
-      }
-    } else if (cycleMode >= ovulation - 5 && cycleMode <= ovulation + 1) {
-      return cycleMode === ovulation ? 'ovulation point' : 'ovulation'
-    }
-  }
-}
-
-export const savePerData = (start, length) => {
-  for (let i = 0; i <= length; i++) {
-    const id = 'PR-' + moment(start).clone().add(i, 'day').format('jYYYY-jMM-jDD')
-    if (i === 0) {
-      putToDB(id, (doc) => {
-        doc.period = 'period-start'
-        return doc
-      })
-    } else if (i === length) {
-      putToDB(id, (doc) => {
-        doc.period = 'period-end'
-        return doc
-      })
-    } else {
-      putToDB(id, (doc) => {
-        doc.period = 'period'
-        return doc
-      })
-    }
-  }
-}
-
-export const dayState = (counter, m) => {
-  const cycleInfo = m.period
-  const jDate = moment(m.month).clone().add(counter, 'day')
+export const computeDaysInMonth = (counter, m) => {
+  const jDate = moment(m).clone().add(counter, 'day')
   const day = jDate.jDate()
   // const hDate = add(d, persianTohijri(newMonth))
   //     .map(h => { return { day: h[0], month: h[1], year: h[2] } })[0];
   const isToday = jDate.isSame(new Date(), 'day')
-  const currentMonthCond = jDate.jMonth() - moment(m.month).jMonth()
-
-  const cycleState = calcuteCycle(jDate, cycleInfo.start, cycleInfo.cycleLength, cycleInfo.periodLength)
-  const periodStart = cycleState === 'period-start'
-  const periodEnd = cycleState === 'period-end'
-  const isPeriod = cycleState === 'period'
-  const isOvulPeriod = cycleState === 'ovulation'
-  const isOvulPoint = cycleState === 'ovulation point'
+  const currentMonthCond = jDate.jMonth() - moment(m).jMonth()
 
   return {
     jDate: jDate.format('jYYYY-jMM-jDD'),
     day,
     isToday,
-    currentMonthCond,
-    isPeriod,
-    periodStart,
-    periodEnd,
-    isOvulPeriod,
-    isOvulPoint
+    currentMonthCond
   }
 }
 
@@ -151,82 +105,103 @@ export const dayState = (counter, m) => {
 export const action$ = new Subject()
 
 export const model$ = action$.pipe(
+  tap(console.log),
   switchMap(present),
+  tap(console.log),
   shareReplay()
 )
-
-const dayInMonth = (m) => range(0, 42)
-  .pipe(
-    map((k) => k - moment(m.month).clone().weekday()),
-    map((day) => dayState(day, m))
-  )
-
-// const dayInMonth = (m) => {
-//   Array.from({length: 42}, (v, i) => i - moment(m.month).clone().weekday())
-//     .map(d => dayState(d, m))
-// }
-
-export const getDaysInMonth = model$.pipe(
-  filter(m => m.status !== 'SELECTED_DAY'),
-  // observeOn(asyncScheduler),
-  switchMap((m) => dayInMonth(m)),
-  share()
-)
-
-export const getMonthList = model$.pipe(
+// no: number of month after or before of current month
+export const getMonthList = (no) => model$.pipe(
+  filter(m => (m.status === 'INIT')),
   take(1),
   map(m => {
-    const ar = Array.from({length: 41}, (v, i) => i - 20)
-    console.log(ar)
+    const ar = Array.from({ length: 2 * no + 1 }, (v, i) => i - no)
     return ar.map(v => moment(m.month).clone().add(v, 'jMonth').format('jYYYY-jMM-jDD'))
   })
 )
 
-export const getPeriodDays = getDaysInMonth.pipe(
-  filter(day => day.periodStart || day.periodEnd)
+export const daysInMonth = (month) => range(-moment(month).clone().weekday(), 42).pipe(
+  // observeOn(asyncScheduler),
+  map((m) => computeDaysInMonth(m, month)),
+  // tap(console.log),
+  observeOn(asapScheduler),
+  share()
 )
 
-export const getMonth = getDaysInMonth.pipe(
-  bufferCount(7),
-  bufferCount(6),
-  shareReplay()
-)
-
-export const getPHNState = getDaysInMonth.pipe(mergeMap((day) => checkHasPHN(`PHN${day.jDate}`)))
-
-export const getBadTimeState = getDaysInMonth.pipe(mergeMap((day) => checkBadTime(day.jDate, 'jYYYY-jMM-jDD')))
-
-export const getSelectedDay = model$.pipe(
+export const shortSelectedDay = model$.pipe(
+  filter(m => (m.status === 'SELECTED_DAY')),
   // distinctUntilKeyChanged('selectedDay'),
   map((m) => moment(m.selectedDay).format('jYYYY-jMM-jDD')),
-  shareReplay()
+  share()
 )
 
-export const getSelectedDayObj = model$.pipe(
+export const longSelectedDayObj = model$.pipe(
   // distinctUntilKeyChanged('selectedDay'),
+  filter(m => (m.status === 'INIT' || 'SELECTED_DAY')),
   map((m) => {
     return {
+      date: m.selectedDay,
       day: moment(m.selectedDay).format('jDD'),
-      month: moment(m.selectedDay).format('jMMMM'),
-      year: moment(m.selectedDay).format('jYYYY')
+      monthName: moment(m.selectedDay).format('jMMMM'),
+      fullYear: moment(m.selectedDay).format('jYYYY'),
+      events: m.events
     }
   }),
   share()
 )
 
-export const getSelectedEvent = model$.pipe(
-  map((m) => m.selectedDay),
-  switchMap((date) => getBadTimeEvents(date, 'jYYYY-jMM-jDD'))
+export const futurePeriodDays = (month) => daysInMonth(month).pipe(
+  pluck('jDate'),
+  combineLatest(model$.pipe(pluck('currentCycle')), (d, c) => dayState(d, c)),
+  filter(x => x)
+)
+export const badTimeEvents = (month) => daysInMonth(month).pipe(
+  mergeMap((day) => getBadTimeEvents(day.jDate))
+)
+export const getDaysHavePHN = (month) => {
+  const endKey = moment(month).clone().add(1, 'jMonth').format('jYYYY-jMM-jDD')
+  return from(getPHNsFromDB(month, endKey)).pipe(
+    mergeMap(d => from(d)),
+    map(doc => ({[doc.id]: doc.doc}))
+  )
+  // map(phn => [phn.bleedState, phn.sexState, phn.moodState, phn.symptomState].flat().filter(x => x !== ''))
+}
+
+export const getDaysHaveEvents = (month) => merge(
+  futurePeriodDays(month),
+  getDaysHavePHN(month),
+  badTimeEvents(month)
 )
 
 export const getSelectedPHN = model$.pipe(
+  filter(m => (m.status === 'SELECTED_DAY')),
   map((m) => m.selectedDay),
-  switchMap((date) => getPHNFromDB('PHN-' + date)),
+  switchMap((date) => getPHNFromDB(date)),
   share()
 )
 
-export const getPHNValues = getSelectedPHN.pipe(
+export const getPHNValuesArray = getSelectedPHN.pipe(
   map(phn => [phn.bleedState, phn.sexState, phn.moodState, phn.symptomState].flat().filter(x => x !== ''))
+)
+
+export const calendarReloadHook = model$.pipe(
+  filter(m => m.status === 'PERIOD_CHANGE'),
+  map(() => parseInt(Math.random() * 100000))
+)
+
+// بعد اینو اضاف کن که اگر قبل از آخرین پریودی واقعی چیزی وارد کرد روی پریودی پیش بینی تاثیر نذار
+//  برای این کار براساس مقدار diff حالتهای مختلف تعریف کن
+export const possibleClosePeriod = model$.pipe(
+  filter(m => (m.status === 'SELECTED_DAY')),
+  map(m => {
+    const diff = moment(m.selectedDay).diff(moment(m.currentCycle.start), 'days')
+    console.log(diff)
+    if (diff > 8 || diff < -m.currentCycle.periodLength) {
+      return ({ canPeriod: true, diff })
+    } else {
+      return ({ canPeriod: false, diff })
+    }
+  })
 )
 
 export const dispatch = (type, payload) => {

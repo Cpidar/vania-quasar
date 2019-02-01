@@ -1,85 +1,59 @@
 <template>
-    <div class="container">
-      <div class="month">
-          <h2 class="monthname">فروردین</h2>
-      </div>
-      <section class="week">
-          <div class="weekday">شنبه</div>
-          <div class="weekday">یکشنبه</div>
-          <div class="weekday">دوشنبه</div>
-          <div class="weekday">سه شنبه</div>
-          <div class="weekday">چهارشنبه</div>
-          <div class="weekday">پنج شنبه</div>
-          <div class="weekday">جمعه</div>
-          <div><span>1</span></div>
-          <div><span>2</span></div>
-          <div><span>3</span></div>
-          <div><span>4</span></div>
-          <div><span>5</span></div>
-          <div><span>6</span></div>
-          <div><span>7</span></div>
-      </section>
-      <div class="circle">
-          <h5 class="date">{{getCurrent}}</h5>
-          <h3 class="circlename">:</h3>
-          <div></div>
-      </div>
-      <!-- <q-carousel ref="carousolCal" class="text-white" infinite arrows @slide="changeMonthSlide"  v-model="slide"> -->
-        <!-- <q-carousel-slide class="bg-primary" v-for="(month) of monthList" :key="month"> -->
-          <!-- <Calendar :current="month" v-if="(index - slide) < 2 && (index - slide) > -2"/> -->
-        <!-- </q-carousel-slide> -->
-      <!-- </q-carousel> -->
+  <div class="container">
+    <div class="month">
+      <h2 class="monthname">فروردین</h2>
     </div>
+    <section class="week">
+      <div class="weekday">شنبه</div>
+      <div class="weekday">یکشنبه</div>
+      <div class="weekday">دوشنبه</div>
+      <div class="weekday">سه شنبه</div>
+      <div class="weekday">چهارشنبه</div>
+      <div class="weekday">پنج شنبه</div>
+      <div class="weekday">جمعه</div>
+      <div><span>1</span></div>
+      <div><span>2</span></div>
+      <div><span>3</span></div>
+      <div><span>4</span></div>
+      <div><span>5</span></div>
+      <div><span>6</span></div>
+      <div><span>7</span></div>
+    </section>
+    <div class="circle">
+      <h5 class="date">{{getCurrent}}</h5>
+      <h3 class="circlename">:</h3>
+      <div></div>
+    </div>
+    <!-- <q-carousel ref="carousolCal" class="text-white" infinite arrows @slide="changeMonthSlide"  v-model="slide"> -->
+    <!-- <q-carousel-slide class="bg-primary" v-for="(month) of monthList" :key="month"> -->
+    <!-- <Calendar :current="month" v-if="(index - slide) < 2 && (index - slide) > -2"/> -->
+    <!-- </q-carousel-slide> -->
+    <!-- </q-carousel> -->
+  </div>
 </template>
 
 <script>
 export default {
   name: 'Home',
-  data () {
+  data() {
     return {
     }
   },
   computed: {
-    getCurrent () {
-      return this.monthList[this.slide]
-    }
+
   },
-  created () {
+  created() {
   },
-  beforeMount () {
+  beforeMount() {
   },
-  mounted () {
+  mounted() {
     // this.$nextTick(() => { this.slide = this.$ref.mySw.activeIndex })
-  },
-  methods: {
-    changeMonthSlide (s, d) {
-      // if (d === 'next') {
-      //   const next = this. slide - 1;
-      //   this.monthList[(next > -1 ? next : 2)] = '1397-10-01'
-      //   this.current.push('1397-12-01')
-      //   if (this.current.length >= 1) {
-      //     this.current.shift()
-      //   }
-      // } else {
-      //   this.current.unshift('1397-08-01')
-      //   if (this.current.length >= 1) {
-      //     this.current.pop()
-      //   }
-      // }
-    },
-    currentSlide () {
-      this.slide = 20
-    },
-    monthChange () {
-      console.log(this.$refs.mySw.swiper.activeIndex)
-      this.$nextTick(() => { this.slide = this.$refs.mySw.swiper.activeIndex })
-    }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-@import url('../main.scss');
+@import url("../main.scss");
 .container {
   display: flex;
   width: 100%;
