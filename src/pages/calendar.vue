@@ -85,8 +85,8 @@ export default class CalendarPage extends Vue {
     dispatch('init', payload)
   }
 
-  beforeUpdate() {
-    this.loading = true
+  goToNextMonth() {
+    this.swiper.slideNext()
   }
 
   goToPrevMonth() {
