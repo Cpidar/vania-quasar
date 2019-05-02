@@ -21,7 +21,7 @@
     "pouchdb": "^7.0.0",
     "pouchdb-find": "^7.0.0",
     "pouchdb-upsert": "^2.2.0",
-    "quasar": "^1.0.0-beta.19",
+    "quasar": "^1.0.0-beta.20",
     "ramda": "^0.26.1",
     "rxjs": "^6.5.1",
     "swiper": "^4.5.0",
@@ -34,7 +34,8 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.2.3",
-    "@quasar/app": "^1.0.0-beta.20",
+    "@babel/plugin-proposal-decorators": "^7.4.4",
+    "@quasar/app": "^1.0.0-beta.22",
     "@quasar/quasar-app-extension-testing": "^1.0.0-rc.6",
     "@quasar/quasar-app-extension-testing-unit-jest": "^1.0.0-beta.23",
     "@types/pouchdb": "^6.3.3",

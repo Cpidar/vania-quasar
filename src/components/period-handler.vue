@@ -2,28 +2,28 @@
   <section>
     <q-list>
       <q-item v-if="isVisibleGotButton">
-        <q-item-main>
-          <q-item-tile label>شروع پریود</q-item-tile>
-        </q-item-main>
-        <q-item-side right>
+        <q-item-label>
+          <q-item-section label>شروع پریود</q-item-section>
+        </q-item-label>
+        <q-item-section>
           <q-toggle
             v-model="gotPeriod"
             checked-icon="sentiment very dissatisfied"
             unchecked-icon="sentiment very satisfied"
           />
-        </q-item-side>
+        </q-item-section>
       </q-item>
       <q-item v-if="!isVisibleGotButton">
-        <q-item-main>
-          <q-item-tile label>پایان پریود</q-item-tile>
-        </q-item-main>
-        <q-item-side right>
+        <q-item-label>
+          <q-item-section label>پایان پریود</q-item-section>
+        </q-item-label>
+        <q-item-section>
           <q-toggle
             v-model="endPeriod"
             checked-icon="sentiment very satisfied"
             unchecked-icon="sentiment very dissatisfied"
           />
-        </q-item-side>
+        </q-item-section>
       </q-item>
     </q-list>
   </section>

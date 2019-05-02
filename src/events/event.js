@@ -62,7 +62,7 @@ var viewPeriod = {
   }
 }
 
-db.put(viewPeriod)
+// db.put(viewPeriod)
 
 export const calculateCycle = () => db.allDocs({
   startkey: 'PR',

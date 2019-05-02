@@ -77,7 +77,10 @@ module.exports = function (ctx) {
         'QCarouselSlide',
         'QCarouselControl',
         'QInnerLoading',
-        'QSpinnerGears'
+        'QSpinnerGears',
+        'QCarousel',
+        'QCarouselControl',
+        'QCarouselSlide'
       ],
       directives: [
         'Ripple',

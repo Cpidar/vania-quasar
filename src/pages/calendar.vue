@@ -2,7 +2,7 @@
   <div class="container">
     <calendar-header :date="getSelectedDay$" @next-month='goToNextMonth'  @prev-month='goToPrevMonth'/>
 
-    <swiper
+    <!-- <swiper
       dir="rtl"
       ref="mySw"
       :options="swiperOpt"
@@ -12,17 +12,32 @@
         v-for="(month, index) of monthList"
         :key="month"
         class="relative-position"
+      > -->
+      <q-carousel
+        animated
+        swipeable
+        arrows
+        transition-next="slide-left"
+        transition-prev="slide-right"
+        v-model="slide"
       >
+        <q-carousel-slide
+          v-for="(month, index) of mjh"
+          :key="month"
+          :name="index"
+        >
         <Calendar
           :current="month"
-          v-if="(index - activeIndex) < 2 && (index - activeIndex) > -2"
+          v-if="(index - slide) < 2 && (index - slide) > -2"
           :key="calendarKey"
         />
-        <q-inner-loading :visible="loading">
+        </q-carousel-slide>
+      </q-carousel>
+        <!-- <q-inner-loading :visible="loading">
           <q-spinner-gears size="50px" color="primary"></q-spinner-gears>
         </q-inner-loading>
       </swiper-slide>
-    </swiper>
+    </swiper> -->
     <calendar-footer />
     <period-handler :currentDate="getSelectedDay$" @period="changePeriod" />
     <event-section :event="getSelectedDay$" />
@@ -70,6 +85,8 @@ export default class CalendarPage extends Vue {
   selectedEvents = {}
   sed = this.getSelectedDay$
   loading = false
+  slide = 10
+  mjh = ['1397-04-01', '1397-05-01', '1397-06-01', '1397-07-01', '1397-08-01', '1397-09-01', '1397-10-01', '1397-11-01', '1397-12-01', '1398-01-01', '1398-02-01', '1398-03-01', '1398-04-01', '1398-05-01', '1398-06-01', '1398-07-01', '1398-08-01', '1398-09-01', '1398-10-01', '1398-11-01', '1398-12-01']
   // activeMonth = [10, 11, 9]
 
   get swiper() {

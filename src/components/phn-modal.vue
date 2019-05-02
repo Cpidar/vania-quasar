@@ -1,6 +1,6 @@
 <template>
-  <q-modal v-model="showModal">
-    <q-layout>
+  <q-dialog v-model="showModal">
+    <q-layout class="bg-white">
       <q-toolbar slot="header">
         <q-btn
           flat
@@ -49,7 +49,7 @@
               />
             </div>
           </q-item>
-          <q-item-separator />
+          <q-separator />
           <div class="q-subheading q-px-sm">حالت روحی</div>
           <q-item>
             <div class="row no-wrap gutter-xs scroll">
@@ -109,7 +109,7 @@
               />
             </div>
           </q-item>
-          <q-item-separator />
+          <q-separator />
           <div class="q-subheading q-px-sm scroll">علائم درد یا بیماری</div>
           <q-item>
             <div class="row no-wrap gutter-xs scroll">
@@ -145,7 +145,7 @@
               />
             </div>
           </q-item>
-          <q-item-separator />
+          <q-separator />
           <div class="q-subheading q-px-sm">رابطه جنسی</div>
           <q-item>
             <div class="row no-wrap gutter-xs">
@@ -173,7 +173,7 @@
         <!-- <q-btn color="primary" @click="close" label="ثبت" /> -->
       </div>
     </q-layout>
-  </q-modal>
+  </q-dialog>
 </template>
 
 <script>
