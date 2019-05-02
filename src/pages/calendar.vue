@@ -22,7 +22,7 @@
         v-model="slide"
       >
         <q-carousel-slide
-          v-for="(month, index) of mjh"
+          v-for="(month, index) of monthList"
           :key="month"
           :name="index"
         >
@@ -86,7 +86,6 @@ export default class CalendarPage extends Vue {
   sed = this.getSelectedDay$
   loading = false
   slide = 10
-  mjh = ['1397-04-01', '1397-05-01', '1397-06-01', '1397-07-01', '1397-08-01', '1397-09-01', '1397-10-01', '1397-11-01', '1397-12-01', '1398-01-01', '1398-02-01', '1398-03-01', '1398-04-01', '1398-05-01', '1398-06-01', '1398-07-01', '1398-08-01', '1398-09-01', '1398-10-01', '1398-11-01', '1398-12-01']
   // activeMonth = [10, 11, 9]
 
   get swiper() {
