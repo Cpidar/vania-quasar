@@ -20,7 +20,7 @@
       <div><span>7</span></div>
     </section>
     <div class="circle">
-      <h5 class="date">{{getCurrent}}</h5>
+      <h5 class="date">{{cycleDayNumber}}</h5>
       <h3 class="circlename">:</h3>
       <div></div>
     </div>
@@ -33,22 +33,103 @@
 </template>
 
 <script>
-export default {
-  name: 'Home',
-  data() {
-    return {
-    }
-  },
-  computed: {
+/* eslint-disable no-unused-vars */
+import cycleModule from '../lib/cycle'
+import { Vue, Component } from 'vue-property-decorator'
+import { LocalDate, ChronoUnit } from 'js-joda'
+import { saveSymptom, getCycleDaysSortedByDate } from '../db'
+import { home as labels, bleedingPrediction as predictLabels, shared } from '../i18n/en/labels'
+import { getFertilityStatusForDay } from '../lib/sympto-adapter'
 
-  },
+@Component()
+export default class Home extends Vue {
+  today = LocalDate.now()
+  todayDateString = this.today.toString()
+  cycleDayNumber = 0
+  prediction = 0
+  predictionText = ''
+  bleedingPredictionRange = ''
+  fertilityStatus = {}
+  cycleDays = []
+  // getBleedingPrediction = cycleModule().getPredictedMenses
+
   created() {
-  },
-  beforeMount() {
-  },
-  mounted() {
-    // this.$nextTick(() => { this.slide = this.$ref.mySw.activeIndex })
+    // saveSymptom('bleeding', this.today.toString(), { value: 2 })
+    // saveSymptom('bleeding', this.today.minusDays(1).toString(), { value: 1 })
+    // saveSymptom('bleeding', this.today.minusDays(2).toString(), { value: 1 })
+    // saveSymptom('bleeding', this.today.minusDays(3).toString(), { value: 1 })
+
+    // saveSymptom('bleeding', this.today.minusDays(32).toString(), { value: 2 })
+    // saveSymptom('bleeding', this.today.minusDays(33).toString(), { value: 1 })
+    // saveSymptom('bleeding', this.today.minusDays(34).toString(), { value: 1 })
+    // saveSymptom('bleeding', this.today.minusDays(35).toString(), { value: 1 })
+
+    // saveSymptom('bleeding', this.today.minusDays(64).toString(), { value: 2 })
+    // saveSymptom('bleeding', this.today.minusDays(65).toString(), { value: 1 })
+    // saveSymptom('bleeding', this.today.minusDays(66).toString(), { value: 1 })
+    // saveSymptom('bleeding', this.today.minusDays(67).toString(), { value: 1 })
+
+    // saveSymptom('bleeding', this.today.minusDays(98).toString(), { value: 1 })
+
+    // saveSymptom('bleeding', this.today.minusDays(128).toString(), { value: 1 })
+
+    cycleModule().then(day => {
+      this.cycleDayNumber = day.getCycleDayNumber(LocalDate.now().toString())
+      this.prediction = day.getPredictedMenses()
+      this.predictionText = determinePredictionText(this.prediction)
+      this.bleedingPredictionRange = getBleedingPredictionRange(this.prediction)
+      console.log(day.getPreviousCycle(LocalDate.now().toString()))
+    })
+    getCycleDaysSortedByDate().then(days => {
+      this.cycleDays = days
+    })
+    getFertilityStatusForDay(this.todayDateString).then(status => {
+      console.log(status)
+      this.fertilityStatus = status
+    })
   }
+}
+
+function determinePredictionText(bleedingPrediction) {
+  if (!bleedingPrediction.length) return predictLabels.noPrediction
+  const todayDate = LocalDate.now()
+  const bleedingStart = LocalDate.parse(bleedingPrediction[0][0])
+  const bleedingEnd = LocalDate.parse(
+    bleedingPrediction[0][bleedingPrediction[0].length - 1]
+  )
+  if (todayDate.isBefore(bleedingStart)) {
+    return predictLabels.predictionInFuture(
+      todayDate.until(bleedingStart, ChronoUnit.DAYS),
+      todayDate.until(bleedingEnd, ChronoUnit.DAYS)
+    )
+  }
+  if (todayDate.isAfter(bleedingEnd)) {
+    return predictLabels.predictionInPast(
+      bleedingStart.toString(), bleedingEnd.toString()
+    )
+  }
+  const daysToEnd = todayDate.until(bleedingEnd, ChronoUnit.DAYS)
+  if (daysToEnd === 0) {
+    return predictLabels.predictionStartedNoDaysLeft
+  } else if (daysToEnd === 1) {
+    return predictLabels.predictionStarted1DayLeft
+  } else {
+    return predictLabels.predictionStartedXDaysLeft(daysToEnd)
+  }
+}
+
+function getBleedingPredictionRange(prediction) {
+  if (!prediction.length) return labels.unknown
+  const todayDate = LocalDate.now()
+  const bleedingStart = LocalDate.parse(prediction[0][0])
+  const bleedingEnd = LocalDate.parse(prediction[0][prediction[0].length - 1])
+  if (todayDate.isBefore(bleedingStart)) {
+    return `${todayDate.until(bleedingStart, ChronoUnit.DAYS)}-${todayDate.until(bleedingEnd, ChronoUnit.DAYS)}`
+  }
+  if (todayDate.isAfter(bleedingEnd)) {
+    return labels.unknown
+  }
+  return '0'
 }
 </script>
 

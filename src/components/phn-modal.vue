@@ -1,6 +1,6 @@
 <template>
   <q-modal v-model="showModal">
-    <q-modal-layout>
+    <q-layout>
       <q-toolbar slot="header">
         <q-btn
           flat
@@ -172,7 +172,7 @@
         </q-list>
         <!-- <q-btn color="primary" @click="close" label="ثبت" /> -->
       </div>
-    </q-modal-layout>
+    </q-layout>
   </q-modal>
 </template>
 

@@ -59,34 +59,30 @@
     <q-page-container>
       <router-view />
     </q-page-container>
-    <q-layout-footer>
-      <q-tabs
-        inverted
-        position="bottom"
-        animated
-      >
+    <q-footer>
+      <q-tabs switch-indicator no-caps dense class="bg-teal" active-color="grey-1">
         <!-- Tabs - notice slot="title" -->
         <q-route-tab
           icon="mail"
           to="/"
           exact
-          slot="title"
+          label="title"
         />
 
         <q-route-tab
           icon="alarm"
           to="/calendar"
           exact
-          slot="title"
+          label="title"
         />
         <q-route-tab
           icon="alarm"
           to="/me"
           exact
-          slot="title"
+          label="title"
         />
       </q-tabs>
-    </q-layout-footer>
+    </q-footer>
   </q-layout>
 </template>
 

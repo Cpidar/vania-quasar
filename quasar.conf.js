@@ -3,7 +3,7 @@
 module.exports = function (ctx) {
   return {
     // app plugins (/src/plugins)
-    plugins: [
+    boot: [
       'rx',
       'swiper'
     ],
@@ -11,11 +11,10 @@ module.exports = function (ctx) {
       'app.styl'
     ],
     extras: [
-      ctx.theme.mat ? 'roboto-font' : null,
       'material-icons' // optional, you are not bound to it
-      // 'ionicons',
-      // 'mdi',
-      // 'fontawesome'
+      // 'ionicons-v4',
+      // 'mdi-v3',
+      // 'fontawesome-v5'
     ],
     supportIE: false,
     build: {
@@ -44,9 +43,9 @@ module.exports = function (ctx) {
     framework: {
       components: [
         'QLayout',
-        'QLayoutHeader',
-        'QLayoutFooter',
-        'QLayoutDrawer',
+        'QHeader',
+        'QFooter',
+        'QDrawer',
         'QPageContainer',
         'QPage',
         'QToolbar',
@@ -54,32 +53,26 @@ module.exports = function (ctx) {
         'QBtn',
         'QIcon',
         'QList',
-        'QListHeader',
         'QItem',
-        'QItemMain',
-        'QItemTile',
-        'QItemSide',
-        'QItemSeparator',
+        'QItemLabel',
+        'QItemSection',
+        'QSeparator',
         'QTabs',
         'QTab',
-        'QTabPane',
+        'QTabPanels',
+        'QTabPanel',
         'QRouteTab',
         'QDialog',
         'QField',
         'QInput',
         'QSlider',
         'QToggle',
-        'QCollapsible',
+        'QExpansionItem',
         'QPageSticky',
         'QCheckbox',
         'QCard',
-        'QCardTitle',
-        'QCardMain',
-        'QCardMedia',
-        'QCardSeparator',
+        'QCardSection',
         'QCardActions',
-        'QModal',
-        'QModalLayout',
         'QCarousel',
         'QCarouselSlide',
         'QCarouselControl',
@@ -89,7 +82,7 @@ module.exports = function (ctx) {
       directives: [
         'Ripple',
         'TouchSwipe',
-        'CloseOverlay'
+        'ClosePopup'
       ],
       // Quasar plugins
       plugins: [
@@ -99,7 +92,7 @@ module.exports = function (ctx) {
         'SessionStorage'
       ],
       // iconSet: ctx.theme.mat ? 'material-icons' : 'ionicons'
-      i18n: 'fa-ir' // Quasar language
+      lang: 'fa-ir' // Quasar language
     },
     // animations: 'all' --- includes all animations
     // animations: [],
@@ -152,7 +145,7 @@ module.exports = function (ctx) {
     },
     electron: {
       // bundler: 'builder', // or 'packager'
-      extendWebpack (cfg) {
+      extendWebpack(cfg) {
         // do something with Electron process Webpack cfg
       },
       packager: {
